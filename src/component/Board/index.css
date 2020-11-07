@@ -1,0 +1,25 @@
+.swim-div{
+    box-shadow: 0.3px 0.5px 4.4px #ccc;
+    /* height: 100vh; */
+    width: 300px;
+    margin: 10px;
+}
+
+.flex-column{
+    display: flex;
+    justify-content: center;
+    /* flex-direction: column; */
+}
+
+.ticket-div{
+
+}
+
+.ticket-div .ticket{
+    border: 1px solid;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px;
+}
