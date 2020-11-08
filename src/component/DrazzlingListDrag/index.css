@@ -10,15 +10,15 @@
     justify-content: center;
     /* flex-direction: column; */
 }
+
+.ticket-div{
+
+}
 .flex-center-center{
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.ticket-div{
-
-}
-
 .ticket-div .ticket{
     border: 1px solid;
     padding: 30px;
