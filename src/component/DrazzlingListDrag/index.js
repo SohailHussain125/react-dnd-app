@@ -65,37 +65,37 @@ import { ItemTypes } from "./ItemTypes";
 import "./index.css";
 export const DrazzlingListDrag = DndProviderWrap(function DrazzlingListDrags() {
   const style = {
-    // width: 400,
+    width: 400,
   };
   const ITEMS = [
     {
-      id: "1",
+      swimId: 1,
       name: "Open",
-      tickets: [
-        { id: "O1" },
-        { id: "O2" },
-        { id: "O3" },
-        { id: "O4" },
-        { id: "O5" },
-        { id: "O6" },
+      card: [
+        { id: "Op1" },
+        { id: "Op2" },
+        { id: "Op3" },
+        { id: "Op4" },
+        { id: "Op5" },
+        { id: "Op6" },
       ],
     },
     {
-      id: "2",
-      name: "Progress",
-      tickets: [
-        { id: "P1" },
-        { id: "P2" },
-        { id: "P3" },
-        { id: "P4" },
-        { id: "P5" },
-        { id: "P6" },
+      swimId: 2,
+      name: "In Progress",
+      card: [
+        { id: "IP1" },
+        { id: "IP2" },
+        { id: "IP3" },
+        { id: "IP4" },
+        { id: "IP5" },
+        { id: "IP6" },
       ],
     },
     {
-      id: "3",
+      swimId: 3,
       name: "Done",
-      tickets: [
+      card: [
         { id: "D1" },
         { id: "D2" },
         { id: "D3" },
@@ -105,60 +105,83 @@ export const DrazzlingListDrag = DndProviderWrap(function DrazzlingListDrags() {
       ],
     },
   ];
-  const [state, setSwimlane] = useState({ swimlane: ITEMS });
-  const { swimlane } = state;
-  const moveCard = (
-    ticketIndex,
-    dragSwimIndex,
-    draggedTicketIndex,
-    swimIndex
-  ) => {
-    console.log(ticketIndex, dragSwimIndex, draggedTicketIndex, swimIndex);
-    let Ticket = swimlane[dragSwimIndex].tickets[draggedTicketIndex];
-    console.log("Ticket", Ticket);
-    if (swimIndex === dragSwimIndex) {
-      let updatedSwim1 = update(swimlane[dragSwimIndex].tickets, {
+  const [state, setState] = useState({ SwimLane: ITEMS });
+  const { SwimLane } = state;
+  const moveCard = (id, atIndex, SwimIndex, dragSwimIndex, DropId) => {
+    const { card, index } = findCard(id, dragSwimIndex);
+    const { index: onDropIndex } = findCard(DropId, SwimIndex);
+    if (SwimIndex === dragSwimIndex) {
+      let updatedCard = update(SwimLane[dragSwimIndex].card, {
         $splice: [
-          [draggedTicketIndex, 1],
-          [ticketIndex, 0, Ticket],
+          [index, 1],
+          [atIndex, 0, card],
         ],
       });
+      SwimLane[dragSwimIndex].card = updatedCard;
+      setState({ ...state, SwimLane });
+    } else {
+      console.log("dragSwimIndex,SwimIndex,index,onDropIndex");
+      console.log(dragSwimIndex, SwimIndex, index, onDropIndex);
 
-      swimlane[dragSwimIndex].tickets = updatedSwim1;
-      setSwimlane({ ...state, swimlane });
+      if (
+        dragSwimIndex !== -1 &&
+        SwimIndex !== -1 &&
+        index !== -1 &&
+        onDropIndex !== -1
+      ) {
+        let updatedCard = update(SwimLane[dragSwimIndex].card, {
+          $splice: [[index, 1]],
+        });
+        let updatedDropCard = update(SwimLane[SwimIndex].card, {
+          $splice: [, [onDropIndex, 0, card]],
+        });
+
+        SwimLane[dragSwimIndex].card = updatedCard;
+        SwimLane[SwimIndex].card = updatedDropCard;
+        setState({ ...state, SwimLane });
+      }
     }
   };
-
-  const findCard = (id) => {
-    const card = swimlane.filter((c) => `${c.id}` === id)[0];
+  const findCard = (id, i) => {
+    const card = SwimLane[i].card.filter((c) => `${c.id}` === id)[0];
     return {
       card,
-      index: swimlane.indexOf(card),
+      index: SwimLane[i].card.indexOf(card),
     };
   };
+
+  const findSwimLane = (swimId) => {
+    console.log('swimId',swimId)
+    const swim = SwimLane.filter((c) => c.swimId === swimId)[0];
+    return {
+      swim,
+      index: SwimLane.indexOf(swim),
+    };
+  };
+
   const [, drop] = useDrop({ accept: ItemTypes.CARD });
   return (
     <>
-      <div ref={drop} style={style}>
-        <div className="flex-column">
-          {swimlane.map((swim, swimIndex) => (
-            <div className="swim-div">
-              <div className="flex-center-center">{swim.name}</div>
-              {swim.tickets.map((ticket, ticketIndex) => (
-                <Card
-                  key={swim.id}
-                  swimId={`${swim.id}`}
-                  text={ticket.id}
-                  id={ticket.id}
-                  swimIndex={swimIndex}
-                  ticketIndex={ticketIndex}
-                  moveCard={moveCard}
-                  findCard={findCard}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
+      <div ref={drop} className="flex-column" style={{ height: "100%" }}>
+        {SwimLane.map((swim, SwimIndex) => (
+          <div style={style}>
+            <div>{swim.name}</div>
+            {swim.card.map((card, cardIndex) => (
+              <Card
+                key={card.id}
+                id={`${card.id}`}
+                text={card.id}
+                moveCard={moveCard}
+                findCard={findCard}
+                findSwimLane={findSwimLane}
+                swim={swim}
+                swimId={swim.swimId}
+                cardIndex={cardIndex}
+                SwimIndex={SwimIndex}
+              />
+            ))}
+          </div>
+        ))}
       </div>
     </>
   );

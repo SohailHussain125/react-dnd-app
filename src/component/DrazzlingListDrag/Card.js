@@ -9,9 +9,9 @@
 //   cursor: "move",
 // };
 // export const Card = ({ id, text, moveCard, findCard }) => {
-//   const originalIndex = findCard(id).index;
+//   // const originalIndex = findCard(id).index;
 //   const [{ isDragging }, drag] = useDrag({
-//     item: { type: ItemTypes.CARD, id, originalIndex },
+//     item: { type: ItemTypes.CARD, id },
 //     collect: (monitor) => ({
 //       isDragging: monitor.isDragging(),
 //     }),
@@ -19,7 +19,7 @@
 //       const { id: droppedId, originalIndex } = monitor.getItem();
 //       const didDrop = monitor.didDrop();
 //       if (!didDrop) {
-//         moveCard(droppedId, originalIndex);
+//         // moveCard(droppedId, originalIndex);
 //       }
 //     },
 //   });
@@ -63,33 +63,42 @@ const style = {
   cursor: "move",
 };
 export const Card = ({
-  swimId,
   id,
   text,
   moveCard,
   findCard,
-  swimIndex,
-  ticketIndex,
+  swim,
+  cardIndex,
+  SwimIndex,
+  swimId,
+  findSwimLane
 }) => {
+  const originalIndex = findCard(id, SwimIndex).index;
+  const originalSwimIndex = findSwimLane(swimId).index;
+console.log('originalSwimIndex',originalSwimIndex)
   const [{ isDragging }, drag] = useDrag({
-    item: { type: ItemTypes.CARD, id, swimId, swimIndex, ticketIndex },
+    item: { type: ItemTypes.CARD, id, originalIndex, SwimIndex ,swimId},
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
     end: (dropResult, monitor) => {
-      const { ticketIndex: draggedTicketIndex, swimIndex: dragSwimIndex } = monitor.getItem();
+      const { id: droppedId, originalIndex } = monitor.getItem();
       const didDrop = monitor.didDrop();
       if (!didDrop) {
-        moveCard(ticketIndex, dragSwimIndex, draggedTicketIndex, swimIndex);
+        moveCard(droppedId, originalIndex);
       }
     },
   });
   const [, drop] = useDrop({
     accept: ItemTypes.CARD,
     canDrop: () => false,
-    hover({ ticketIndex: draggedTicketIndex, swimIndex: dragSwimIndex }) {
-      if (ticketIndex !== draggedTicketIndex ) {
-        moveCard(ticketIndex, dragSwimIndex, draggedTicketIndex, swimIndex);
+    hover({ id: draggedId, SwimIndex: dragSwimIndex ,swimId:dragSwimId}) {
+      // console.log(SwimIndex, "SwimIndex");
+      // console.log(dragSwimIndex, "dragSwimIndex");
+
+      if (draggedId !== id || dragSwimId!==swimId) {
+        const { index: overIndex } = findCard(id, SwimIndex);
+        moveCard(draggedId, overIndex, SwimIndex, dragSwimIndex,id);
       }
     },
   });
