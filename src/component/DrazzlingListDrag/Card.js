@@ -71,13 +71,20 @@ export const Card = ({
   cardIndex,
   SwimIndex,
   swimId,
-  findSwimLane
+  findSwimLane,
 }) => {
   const originalIndex = findCard(id, SwimIndex).index;
   const originalSwimIndex = findSwimLane(swimId).index;
-console.log('originalSwimIndex',originalSwimIndex)
+  console.log("originalSwimIndex", originalSwimIndex);
   const [{ isDragging }, drag] = useDrag({
-    item: { type: ItemTypes.CARD, id, originalIndex, SwimIndex ,swimId},
+    item: {
+      type: ItemTypes.CARD,
+      id,
+      originalIndex,
+      SwimIndex,
+      swimId,
+      originalSwimIndex,
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -92,13 +99,23 @@ console.log('originalSwimIndex',originalSwimIndex)
   const [, drop] = useDrop({
     accept: ItemTypes.CARD,
     canDrop: () => false,
-    hover({ id: draggedId, SwimIndex: dragSwimIndex ,swimId:dragSwimId}) {
+    hover({ id: draggedId, SwimIndex: dragSwimIndex, swimId: dragSwimId }) {
       // console.log(SwimIndex, "SwimIndex");
-      // console.log(dragSwimIndex, "dragSwimIndex");
+      // console.log(id, "id");
 
-      if (draggedId !== id || dragSwimId!==swimId) {
+      if (draggedId !== id || dragSwimId !== swimId) {
         const { index: overIndex } = findCard(id, SwimIndex);
-        moveCard(draggedId, overIndex, SwimIndex, dragSwimIndex,id);
+        const { index: overSwimIndex } = findSwimLane(swimId);
+
+        moveCard(
+          draggedId,
+          overIndex,
+          SwimIndex,
+          dragSwimIndex,
+          id,
+          overSwimIndex,
+          dragSwimId
+        );
       }
     },
   });

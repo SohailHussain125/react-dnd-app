@@ -57,7 +57,7 @@
 // });
 
 import React, { useState } from "react";
-import { useDrop } from "react-dnd";
+import { useDrop ,useDrag} from "react-dnd";
 import DndProviderWrap from "../DndProviderWrap/index";
 import { Card } from "./Card";
 import update from "immutability-helper";
@@ -107,37 +107,56 @@ export const DrazzlingListDrag = DndProviderWrap(function DrazzlingListDrags() {
   ];
   const [state, setState] = useState({ SwimLane: ITEMS });
   const { SwimLane } = state;
-  const moveCard = (id, atIndex, SwimIndex, dragSwimIndex, DropId) => {
-    const { card, index } = findCard(id, dragSwimIndex);
-    const { index: onDropIndex } = findCard(DropId, SwimIndex);
-    if (SwimIndex === dragSwimIndex) {
-      let updatedCard = update(SwimLane[dragSwimIndex].card, {
+
+
+  
+  const moveCard = (
+    id,
+    atIndex,
+    SwimIndex,
+    dragSwimIndex,
+    DropId,
+    overSwimIndex,
+    swimId
+  ) => {
+    console.log("swimId", swimId);
+    const { index: draggedSwimIndex } = findSwimLane(swimId);
+    console.log("draggedSwimIndex", draggedSwimIndex);
+    console.log("overSwimIndex", overSwimIndex);
+
+    const { card, index } = findCard(id, draggedSwimIndex);
+    const { index: onDropIndex } = findCard(DropId, overSwimIndex);
+    if (overSwimIndex === draggedSwimIndex) {
+      let updatedCard = update(SwimLane[draggedSwimIndex].card, {
         $splice: [
           [index, 1],
           [atIndex, 0, card],
         ],
       });
-      SwimLane[dragSwimIndex].card = updatedCard;
+      SwimLane[overSwimIndex].card = updatedCard;
       setState({ ...state, SwimLane });
     } else {
       console.log("dragSwimIndex,SwimIndex,index,onDropIndex");
       console.log(dragSwimIndex, SwimIndex, index, onDropIndex);
 
       if (
-        dragSwimIndex !== -1 &&
-        SwimIndex !== -1 &&
+        draggedSwimIndex !== overSwimIndex &&
+        draggedSwimIndex !== -1 &&
+        overSwimIndex !== -1 &&
         index !== -1 &&
         onDropIndex !== -1
       ) {
-        let updatedCard = update(SwimLane[dragSwimIndex].card, {
+        let updatedCard = update(SwimLane[draggedSwimIndex].card, {
           $splice: [[index, 1]],
         });
-        let updatedDropCard = update(SwimLane[SwimIndex].card, {
+        let updatedDropCard = update(SwimLane[overSwimIndex].card, {
           $splice: [, [onDropIndex, 0, card]],
         });
+        console.log("updatedCard", updatedCard);
+        console.log("updatedDropCard", updatedDropCard);
 
         SwimLane[dragSwimIndex].card = updatedCard;
-        SwimLane[SwimIndex].card = updatedDropCard;
+        SwimLane[overSwimIndex].card = updatedDropCard;
         setState({ ...state, SwimLane });
       }
     }
@@ -151,14 +170,14 @@ export const DrazzlingListDrag = DndProviderWrap(function DrazzlingListDrags() {
   };
 
   const findSwimLane = (swimId) => {
-    console.log('swimId',swimId)
+    console.log("swimId", swimId);
     const swim = SwimLane.filter((c) => c.swimId === swimId)[0];
     return {
       swim,
       index: SwimLane.indexOf(swim),
     };
   };
-
+  
   const [, drop] = useDrop({ accept: ItemTypes.CARD });
   return (
     <>
